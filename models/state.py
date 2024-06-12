@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-""" holds class State"""
+"""State Module"""
 import models
+from models import storage_t
 from models.base_model import BaseModel, Base
 from models.city import City
 from os import getenv
@@ -10,13 +11,11 @@ from sqlalchemy.orm import relationship
 
 
 class State(BaseModel, Base):
-    """Representation of state """
-    if models.storage_t == "db":
+    """Class State"""
+    if storage_t == "db":
         __tablename__ = 'states'
         name = Column(String(128), nullable=False)
-        cities = relationship("City",
-                              backref="state",
-                              cascade="all, delete, delete-orphan")
+        cities = relationship("City", backref="state")
     else:
         name = ""
 
@@ -24,13 +23,16 @@ class State(BaseModel, Base):
         """initializes state"""
         super().__init__(*args, **kwargs)
 
-    if models.storage_t != "db":
-        @property
-        def cities(self):
-            """getter for list of city instances related to the state"""
-            city_list = []
-            all_cities = models.storage.all(City)
-            for city in all_cities.values():
-                if city.state_id == self.id:
-                    city_list.append(city)
-            return city_list
+    @property
+    def cities(self):
+        """
+        returns the list of City instances
+        with state_id equals to the current State.id
+        """
+        city_list = []
+        all_cities = models.storage.all(City)
+        for city in all_cities.values():
+            if city.state_id == self.id:
+                city_list.append(city)
+
+        return city_list
