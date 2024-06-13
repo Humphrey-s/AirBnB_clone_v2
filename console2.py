@@ -2,7 +2,6 @@
 """ Console Module """
 import cmd
 import sys
-from os import getenv
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -74,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] == '}'\
+                    if pline[0] is '{' and pline[-1] is'}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -120,42 +119,27 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        args = args.split(' ', 1)
+        args = args.split(' ')
+        print(args)
 
-        if args[0] not in HBNBCommand.classes.keys():
-            print("** class doesn't exist")
+        if args[0] not in HBNBCommand.classes.keys(): 
+            print("** class doesn't exist **")
+            return
 
-        dic_t = {}
-        try:
-            args1 = args[1].split(" ")
-            lst = []
+        params = {}
+        for i in range(1, len(args)):
 
-            for i in range(0, len(args1)):
-                if "=" in args1[i]:
-                    for a in range(i + 1, len(args1)):
-                        if "=" in args1[a]:
-                            break
-                        else:
-                            args1[i] += "_" + args1[a]
-            for i in args1:
-                if "=" in i:
-                    lst = i.split("=")
-                    dic_t[lst[0]] = lst[1]
-        except IndexError:
-            pass
+            try:
+                array = args[i].split("=")
+                value = array[1][:]
+                print(list(value))
+            except IndexError:
+                pass
 
-        for key in dic_t.keys():
-            value = dic_t[key]
-            if "\"" in value:
-                dic_t[key] = value.replace("\"", "")
-            elif "." in dic_t[key]:
-                dic_t[key] = eval(value)
-            else:
-                dic_t[key] = eval(value)
+            print(value)
 
-        new_instance = HBNBCommand.classes[args[0]](**dic_t)
-
-        new_instance.save()
+        new_instance = HBNBCommand.classes[args[0]]()
+        storage.save()
         print(new_instance.id)
         storage.save()
 
@@ -239,27 +223,12 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            if getenv('HBNB_TYPE_STORAGE') == 'FileStorage':
-                for k, v in storage._FileStorage__objects.items():
-                    if k.split('.')[0] == args:
-                        print_list.append(str(v))
-            else:
-                objs = storage.all(HBNBCommand.classes[args])
-                for key in objs.keys():
-                    print_list.append(str(objs[key]))
+            for k, v in storage._FileStorage__objects.items():
+                if k.split('.')[0] == args:
+                    print_list.append(str(v))
         else:
-            if getenv('HBNB_TYPE_STORAGE') is not None:
-                if getenv('HBNB_TYPE_STORAGE') == 'FileStorage':
-                    for k, v  in storage.__FileStorage__objects.items():
-                        print_list.append(str(v))
-
-                if getenv('HBNB_TYPE_STORAGE') == 'DBStorage':
-                    for k, v in storage.all:
-                        print_list.append(str(v))
-            else:
-                for k, v in storage._FileStorage__objects.items():
-                        print_list.append(str(v))
-
+            for k, v in storage._FileStorage__objects.items():
+                print_list.append(str(v))
 
         print(print_list)
 
@@ -320,7 +289,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] == '\"':  # check for quoted arg
+            if args and args[0] is '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -328,10 +297,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] == ' ':
+            if not att_name and args[0] is not ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] == '\"':
+            if args[2] and args[2][0] is '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
@@ -367,7 +336,6 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
-
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
