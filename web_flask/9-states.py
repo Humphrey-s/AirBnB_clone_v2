@@ -10,11 +10,23 @@ app = Flask(__name__)
 
 
 @app.route('/states', strict_slashes=False)
-@app.route('/states/<uuid:id>', strict_slashes=False)
-def states(id=None):
+def states():
     """display a HTML page:"""
     states = storage.all(State).values()
-    return render_template('9-states.html', states=states, id=id)
+    states = sorted(states, key=lambda k: k.name)
+    return render_template('7-states_list.html', states=states)
+
+
+@app.route('/states/<id>', strict_slashes=False)
+def get_state(id=None):
+    """display a HTML page:"""
+    states = storage.all(State).values()
+    specific_state = storage.get(State, id)
+    print(specific_state)
+    return render_template(
+                '9-states.html',
+                states=states,
+                specific_state=specific_state)
 
 
 @app.teardown_appcontext
@@ -24,4 +36,4 @@ def teardown_db(exception):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='5000', debug=True)
+    app.run(host='0.0.0.0', port='5000')
